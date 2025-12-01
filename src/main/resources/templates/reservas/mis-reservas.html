@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Mis Reservas - El Mirador</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="/">El Mirador</a>
+        <div class="d-flex">
+            <a href="/reservas/buscar" class="btn btn-outline-light btn-sm me-2">Nueva Reserva</a>
+            <form th:action="@{/logout}" method="post">
+                <button class="btn btn-danger btn-sm">Salir</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Mis Reservas</h2>
+        <div th:if="${param.exito}" class="alert alert-success py-1 px-3 m-0">
+            <i class="bi bi-check-circle"></i> ¡Reserva creada con éxito!
+        </div>
+        <div th:if="${param.pagoExitoso}" class="alert alert-success py-1 px-3 m-0">
+            <i class="bi bi-cash-coin"></i> ¡Pago registrado! Lo validaremos en breve.
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Código</th>
+                            <th>Recurso</th>
+                            <th>Fechas</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="reserva : ${reservas}">
+                            <td>
+                                <strong th:text="${reserva.codigoReserva}">RES-001</strong>
+                                <br>
+                                <small class="text-muted" th:text="${#temporals.format(reserva.createdAt, 'dd/MM/yyyy')}">Fecha</small>
+                            </td>
+                            <td>
+                                <span th:text="${reserva.recurso.nombre}">Bungalow 1</span>
+                                <br>
+                                <small class="text-muted"><i class="bi bi-people"></i> <span th:text="${reserva.cantidadPersonas}">2</span> pers.</small>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column">
+                                    <small>Del: <span th:text="${#temporals.format(reserva.fechaInicio, 'dd/MM HH:mm')}"></span></small>
+                                    <small>Al: &nbsp;<span th:text="${#temporals.format(reserva.fechaFin, 'dd/MM HH:mm')}"></span></small>
+                                </div>
+                            </td>
+                            <td class="fw-bold">
+                                S/ <span th:text="${reserva.precioTotal}">150.00</span>
+                            </td>
+                            <td>
+                                <span th:if="${reserva.estado.name() == 'PENDIENTE_PAGO'}" class="badge bg-warning text-dark">Pendiente Pago</span>
+                                <span th:if="${reserva.estado.name() == 'ESPERANDO_CONFIRMACION'}" class="badge bg-info text-white">Esperando Confirmación</span>
+                                <span th:if="${reserva.estado.name() == 'CONFIRMADA'}" class="badge bg-success">Confirmada</span>
+                                <span th:if="${reserva.estado.name() == 'CANCELADA'}" class="badge bg-danger">Cancelada</span>
+                                <span th:if="${reserva.estado.name() == 'COMPLETADA'}" class="badge bg-secondary">Finalizada</span>
+                            </td>
+                            <td>
+                                <a th:if="${reserva.estado.name() == 'PENDIENTE_PAGO'}" 
+                                th:href="@{/pagos/registrar/{id}(id=${reserva.idReserva})}" 
+                                class="btn btn-primary btn-sm" title="Pagar ahora">
+                                    <i class="bi bi-credit-card"></i>
+                                </a>
+                                
+                                <a th:href="@{/reservas/detalle/{id}(id=${reserva.idReserva})}" 
+                                class="btn btn-outline-secondary btn-sm" title="Ver detalles">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+
+                                <a th:if="${reserva.estado.name() == 'PENDIENTE_PAGO'}" 
+                                th:href="@{/reservas/cancelar/{id}(id=${reserva.idReserva})}" 
+                                class="btn btn-danger btn-sm" 
+                                onclick="return confirm('¿Estás seguro de cancelar esta reserva?');"
+                                title="Cancelar reserva">
+                                    <i class="bi bi-x-lg"></i>
+                                </a>
+                                
+                                <small th:if="${reserva.estado.name() == 'ESPERANDO_CONFIRMACION'}" class="text-muted fst-italic d-block mt-1">
+                                    Validando pago...
+                                </small>
+                            </td>
+                        </tr>
+                        
+                        <tr th:if="${reservas.isEmpty()}">
+                            <td colspan="6" class="text-center py-5">
+                                <p class="text-muted">No tienes reservas registradas aún.</p>
+                                <a href="/reservas/buscar" class="btn btn-primary">Hacer mi primera reserva</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
